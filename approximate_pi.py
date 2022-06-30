@@ -6,22 +6,16 @@ import array
 import sys
 import subprocess
 import simulator as sim
+
+
 START_TIME = time.time()
-if len(sys.argv) != 4:
-    raise ValueError("Respectez le format suivant: (fonction taille nombre_de_points précision)")
 TAILLE = sys.argv[1]
 NBR_POINTS = sys.argv[2]
 PRECISION = sys.argv[3]
-if not(TAILLE.isdigit() and NBR_POINTS.isdigit() and PRECISION.isdigit()):
-    raise ValueError("Entrer des arguments entier positifs")
 TAILLE = int(TAILLE)
 NBR_POINTS = int(NBR_POINTS)
 PRECISION = int(PRECISION)
 nbr_point = int(NBR_POINTS/10)
-if TAILLE <= 0 or NBR_POINTS <= 0:
-    raise ValueError("Entrez une taille ou un nombre de points strictement positifs")
-if PRECISION < 0:
-    raise ValueError("Entrez une précision positif")
 POINTS_CERCLE = 0
 MAX_VAL = 255
 PPM_HEADER = f'P6 {TAILLE} {TAILLE} {MAX_VAL}\n'
@@ -29,6 +23,13 @@ IMAGE = array.array('B', [255, 255, 255] * TAILLE * TAILLE)
 POINT_ORIGINE = sim.point(0, 0)
 CERCLE_UNITE = sim.cercle(POINT_ORIGINE, 1)
 INDEX_CHIFFRE = [] #sauvegarde les positions des pixels des chiffres tracés
+
+if len(sys.argv) != 4: raise ValueError("Respectez le format suivant: (fonction taille nombre_de_points précision)")
+if not(TAILLE.isdigit() and NBR_POINTS.isdigit() and PRECISION.isdigit()): raise ValueError("Entrer des arguments entier positifs")
+if TAILLE <= 0 or NBR_POINTS <= 0: raise ValueError("Entrez une taille ou un nombre de points strictement positifs")
+if PRECISION < 0: raise ValueError("Entrez une précision positif")
+    
+
 def trait_vertical(point_depart, longueur, direction):
     """Dessine un trait vertical noir."""
     x, y = int(point_depart[0]), int(point_depart[1])
@@ -51,6 +52,8 @@ def trait_vertical(point_depart, longueur, direction):
             IMAGE[index2], IMAGE[index2+1], IMAGE[index2+2] = 0, 0, 0
             point_depart = point_depart[0], point_depart[1]-1
     return point_depart
+
+
 def trait_horizontal(point_depart, longueur, direction):
     """Dessine deux traits horizontal noir(un sur l'autre)."""
     x, y = int(point_depart[0]), int(point_depart[1])
@@ -73,6 +76,8 @@ def trait_horizontal(point_depart, longueur, direction):
             IMAGE[index2], IMAGE[index2+1], IMAGE[index2+2] = 0, 0, 0
             point_depart = point_depart[0]-1, point_depart[1]
     return point_depart
+
+
 def dessiner_chiffre(chiffre, point_depart, image):
     """Trace un chiffre au milieu de l'image"""
     longueur = int((5/100)*TAILLE)
@@ -138,6 +143,8 @@ def dessiner_chiffre(chiffre, point_depart, image):
         point_depart = trait_vertical(point_depart, longueur, "bas")
         point_depart_2 = trait_vertical(point_depart_2, longueur, "haut")
         point_depart = trait_horizontal(point_depart, largeur, "gauche")
+        
+        
 def generate_ppm_file(ordre):
     """Cree une image ppm contenant l'approximation de pi"""
     # Adaper les points a la taille de l'image et les dessiner en rouge s'il
@@ -185,15 +192,21 @@ def generate_ppm_file(ordre):
         IMAGE.tofile(f_0)
     for index in INDEX_CHIFFRE:
         IMAGE[index], IMAGE[index+1], IMAGE[index+2] = 192, 192, 192
+        
+        
 def grid2gif(image_str, output_gif):
     """Regroupe des images en un fichier gif"""
     str1 = 'convert -delay 100 -loop 1 ' + image_str  + ' ' + output_gif
     subprocess.call(str1, shell=True)
+    
+    
 def main():
     """Fonction principale du programme"""
     for i in range(10):
         generate_ppm_file(i)
     grid2gif("img*.ppm", "project.gif")
+    
+    
 if __name__ == "__main__":
     main()
     print("--- %s seconds ---" % (time.time() - START_TIME))
