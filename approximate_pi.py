@@ -6,6 +6,9 @@ import array
 import sys
 import subprocess
 import simulator as sim
+import glob
+import os
+import imageio
 START_TIME = time.time()
 if len(sys.argv) != 4:
     raise ValueError("Respectez le format suivant: (fonction taille nombre_de_points précision)")
@@ -185,15 +188,21 @@ def generate_ppm_file(ordre):
         IMAGE.tofile(f_0)
     for index in INDEX_CHIFFRE:
         IMAGE[index], IMAGE[index+1], IMAGE[index+2] = 192, 192, 192
-def grid2gif(image_str, output_gif):
+def grid2gif(ppm_files, output_gif):
     """Regroupe des images en un fichier gif"""
-    str1 = 'convert -delay 100 -loop 1 ' + image_str  + ' ' + output_gif
-    subprocess.call(str1, shell=True)
+    ppm_img = []
+    n = len(ppm_files)
+    for i in range(n) :
+        ppm_img.append(imageio.imread(ppm_files[i]))
+    imageio.mimsave(output_gif, ppm_img)
+    for str in ppm_files :
+        os.remove(str)
 def main():
     """Fonction principale du programme"""
     for i in range(10):
         generate_ppm_file(i)
-    grid2gif("img*.ppm", "project.gif")
+    ppm_files = glob.glob('*.ppm')
+    grid2gif(ppm_files, "project_"+ str(NBR_POINTS) + "_"+ str(PRECISION) +".gif")
 if __name__ == "__main__":
     main()
     print("--- %s seconds ---" % (time.time() - START_TIME))
